@@ -4,17 +4,24 @@ Automatically manage Greptile code reviews for GitHub repos.
 
 ## Commands
 
-### Setup
+### Setup & Enable Repos (via API!)
 ```bash
-greptile setup <repo> - Enable Greptile on a repository
-greptile setup-all - Enable on all configured repos
+python greptile_api.py enable <repo>          # Enable single repo
+python greptile_api.py enable-all             # Enable all 4 repos
+python greptile_api.py status <repo>          # Check indexing status  
+python greptile_api.py wait <repo>            # Wait for indexing to complete
 ```
 
-### Reviews
+### PR Reviews
 ```bash
-greptile review <pr-url> - Trigger code review on PR
-greptile status <repo> - Check review status
-greptile pending - List all pending reviews
+python greptile_v2.py create-pr-wait <title> <body>  # Create PR and wait for review
+python greptile_v2.py wait <pr-url>                  # Wait for review on existing PR
+python greptile_v2.py check                           # List PRs with reviews
+```
+
+### Query Repository
+```bash
+python greptile_api.py query <repo> <question>  # Ask questions about code
 ```
 
 ## Configuration
