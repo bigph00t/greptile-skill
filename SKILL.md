@@ -1,81 +1,88 @@
 # Greptile Code Review Skill
 
-Get automated code reviews on your GitHub PRs using Greptile AI.
+Get AI-powered code reviews on your GitHub PRs using Greptile's query API.
 
-## Quick Start
+## 🚀 Quick Start for AI Agents
 
-### 1. Enable a repo (one-time setup)
+### Simple Commands
 ```bash
-python ~/greptile-skill/greptile.py enable owner/repo
-```
-This automatically:
-- Detects the default branch
-- Submits for indexing
-- Waits for completion (~5-30 min depending on repo size)
+# Enable a repo for analysis
+python ~/greptile-skill/greptile_simple.py enable owner/repo
 
-### 2. Get PR reviews
-```bash
-python ~/greptile-skill/greptile.py review https://github.com/owner/repo/pull/123
-```
-This:
-- Waits for Greptile to review the PR
-- Shows the review when ready
-- Saves notes to `~/greptile-reviews/`
+# Get PR review  
+python ~/greptile-skill/greptile_simple.py review https://github.com/owner/repo/pull/123
 
-### 3. Check recent reviews
-```bash
-python ~/greptile-skill/greptile.py status
+# Get review AND post to PR
+python ~/greptile-skill/greptile_simple.py review-post https://github.com/owner/repo/pull/123
 ```
 
-## Example Workflow
+## How It Works
 
-1. **Create a new repo and enable it:**
-   ```bash
-   gh repo create bigph00t/my-app --private
-   python ~/greptile-skill/greptile.py enable bigph00t/my-app
-   ```
+Since Greptile doesn't provide a direct PR review API endpoint, we:
+1. Fetch PR diffs using GitHub CLI
+2. Send to Greptile's query API for analysis
+3. Get comprehensive code reviews
+4. Optionally post as PR comments
 
-2. **Make changes and create PR:**
-   ```bash
-   cd ~/my-app
-   git checkout -b feature
-   # ... make changes ...
-   git add -A && git commit -m "Add feature"
-   git push -u origin feature
-   gh pr create --title "Add new feature" --body "Description"
-   ```
+## Complete Workflow Example
 
-3. **Wait for review:**
-   ```bash
-   python ~/greptile-skill/greptile.py review https://github.com/bigph00t/my-app/pull/1
-   ```
-
-### One-Command PR + Review
-
-After making changes and pushing:
 ```bash
-cd ~/my-app
-python ~/greptile-skill/create_pr_and_review.py "Add new feature" "Optional description"
+# 1. Create repo and enable Greptile
+gh repo create bigph00t/new-feature --private
+python ~/greptile-skill/greptile_simple.py enable bigph00t/new-feature
+
+# 2. Make changes and create PR
+cd ~/new-feature
+git checkout -b add-auth
+# ... make changes ...
+git add -A && git commit -m "Add authentication"
+git push -u origin add-auth
+gh pr create --title "Add authentication" --body "Implements JWT auth"
+
+# 3. Get AI review
+python ~/greptile-skill/greptile_simple.py review-post https://github.com/bigph00t/new-feature/pull/1
 ```
-This creates the PR and immediately waits for Greptile's review.
 
-## Notes
+## Features
 
-- Reviews are saved to `~/greptile-reviews/` for future reference
-- Empty repos can't be indexed - add code first
-- Private repos work if your Greptile account has GitHub access
-- API key stored in `~/secrets/greptile_api_key`
+- ✅ Works without GitHub App installation
+- ✅ Immediate reviews (no webhook waiting)
+- ✅ Reviews saved to `~/greptile-reviews/`
+- ✅ Auto-detects branch names
+- ✅ Handles private repos
+- ✅ Posts reviews as PR comments
 
-## Advanced Commands
+## Advanced Usage
 
-For more control, use the API directly:
+For more control, use the individual scripts:
+
 ```bash
-# Check specific repo status
-python ~/greptile-skill/greptile_api.py status owner/repo
+# Just enable indexing
+python ~/greptile-skill/greptile_api.py enable owner/repo
+
+# Manual review with options
+python ~/greptile-skill/greptile_review.py <pr-url> --post --repo bigph00t/strainwise
 
 # Query a repo
-python ~/greptile-skill/greptile_api.py query owner/repo "How does the auth work?"
-
-# Enable with specific branch
-python -c "from greptile_api import GreptileAPI; api = GreptileAPI(); print(api.enable_repo('owner/repo', branch='develop'))"
+python ~/greptile-skill/greptile_api.py query owner/repo "How does auth work?"
 ```
+
+## Configuration
+
+Store API key in one of:
+- Environment: `export GREPTILE_API_KEY="your-key"`
+- File: `echo "your-key" > ~/secrets/greptile_api_key`
+
+## Limitations
+
+- Repos must be indexed first (5-30 min)
+- Empty repos cannot be indexed
+- Reviews use query API, not official review endpoint
+
+## Files
+
+- `greptile_simple.py` - Main commands for AI agents
+- `greptile_api.py` - Core API wrapper
+- `greptile_review.py` - Advanced review features
+- `greptile.py` - Original workflow (deprecated)
+- `AI_AGENT_GUIDE.md` - Detailed explanation
