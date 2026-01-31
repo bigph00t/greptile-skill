@@ -67,21 +67,43 @@ class GreptileReviewer:
         print(f"   Author: {pr_info['author']}")
         print(f"   Repo: {pr_info['repo']}")
         
-        # Use the PR's repo if it's indexed, otherwise use a default indexed repo
+        # Use the PR's repo if it's indexed; otherwise (optionally) auto-enable & wait.
+        context_note = ""
         if indexed_repo:
             query_repo = indexed_repo
         else:
-            # Check if the PR's repo is indexed
             status = self.api.check_repo_status(pr_info['repo'])
-            if status.get('success') and status.get('status') == 'COMPLETED':
+            repo_status = str(status.get('status', '')).upper() if status.get('success') else ""
+
+            if repo_status in {'PROCESSED', 'COMPLETED'}:
                 query_repo = pr_info['repo']
             else:
-                # Fallback to any indexed repo (strainwise is always indexed)
-                query_repo = "bigph00t/strainwise"
-                print(f"\n⚠️  {pr_info['repo']} not indexed, using {query_repo} for context")
-        
+                # Try to enable & wait briefly so we can use the correct repo as context.
+                try:
+                    self.api.enable_repo(pr_info['repo'])
+                except Exception:
+                    pass
+
+                # Keep this short for interactive use; indexing can take longer, in which case we fall back.
+                wait = self.api.wait_for_indexing(pr_info['repo'], timeout_minutes=5)
+                if wait.get('success'):
+                    query_repo = pr_info['repo']
+                else:
+                    # Fallback: use a known-indexed repo to satisfy the query API.
+                    # IMPORTANT: we instruct the model to ONLY use the diff (repo context may be irrelevant).
+                    query_repo = "bigph00t/strainwise"
+                    context_note = (
+                        f"NOTE: The target repo ({pr_info['repo']}) is not indexed yet. "
+                        f"This request is being sent with context repo {query_repo} ONLY as a transport requirement. "
+                        "Do NOT assume anything about the target repo beyond what is shown in the diff. "
+                        "Review the diff strictly on its own merits."
+                    )
+                    print(f"\n⚠️  {pr_info['repo']} not indexed yet; using {query_repo} as a placeholder context")
+
         # Build review prompt
         prompt = f"""Please provide a thorough code review for this pull request.
+
+{context_note}
 
 **PR Title**: {pr_info['title']}
 **Description**: {pr_info['body'] or 'No description provided'}

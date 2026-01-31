@@ -32,7 +32,7 @@ def create_pr_and_wait_review(title: str, body: str = ""):
     # Now wait for review
     print("\n🔍 Waiting for Greptile review...")
     import os
-    script_path = os.path.expanduser("~/greptile-skill/greptile.py")
+    script_path = os.path.expanduser("~/skills/greptile/greptile.py")
     subprocess.run(["python", script_path, "review", pr_url])
     
     return True

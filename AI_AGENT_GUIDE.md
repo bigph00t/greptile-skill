@@ -17,7 +17,7 @@ We use the API approach which works perfectly for AI agents!
 gh repo create owner/new-repo --private
 
 # Enable Greptile indexing
-python ~/greptile-skill/greptile_simple.py enable owner/new-repo
+python ~/skills/greptile/greptile_simple.py enable owner/new-repo
 ```
 
 ### 2. Make Changes & Create PR
@@ -33,10 +33,10 @@ gh pr create --title "Add feature" --body "Description"
 ### 3. Get AI Code Review
 ```bash
 # Just get review
-python ~/greptile-skill/greptile_simple.py review https://github.com/owner/repo/pull/123
+python ~/skills/greptile/greptile_simple.py review https://github.com/owner/repo/pull/123
 
 # Get review AND post as PR comment
-python ~/greptile-skill/greptile_simple.py review-post https://github.com/owner/repo/pull/123
+python ~/skills/greptile/greptile_simple.py review-post https://github.com/owner/repo/pull/123
 ```
 
 ## How It Works

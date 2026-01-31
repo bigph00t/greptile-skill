@@ -7,13 +7,13 @@ Get AI-powered code reviews on your GitHub PRs using Greptile's query API.
 ### Simple Commands
 ```bash
 # Enable a repo for analysis
-python ~/greptile-skill/greptile_simple.py enable owner/repo
+python ~/skills/greptile/greptile_simple.py enable owner/repo
 
 # Get PR review  
-python ~/greptile-skill/greptile_simple.py review https://github.com/owner/repo/pull/123
+python ~/skills/greptile/greptile_simple.py review https://github.com/owner/repo/pull/123
 
 # Get review AND post to PR
-python ~/greptile-skill/greptile_simple.py review-post https://github.com/owner/repo/pull/123
+python ~/skills/greptile/greptile_simple.py review-post https://github.com/owner/repo/pull/123
 ```
 
 ## How It Works
@@ -29,7 +29,7 @@ Since Greptile doesn't provide a direct PR review API endpoint, we:
 ```bash
 # 1. Create repo and enable Greptile
 gh repo create bigph00t/new-feature --private
-python ~/greptile-skill/greptile_simple.py enable bigph00t/new-feature
+python ~/skills/greptile/greptile_simple.py enable bigph00t/new-feature
 
 # 2. Make changes and create PR
 cd ~/new-feature
@@ -40,7 +40,7 @@ git push -u origin add-auth
 gh pr create --title "Add authentication" --body "Implements JWT auth"
 
 # 3. Get AI review
-python ~/greptile-skill/greptile_simple.py review-post https://github.com/bigph00t/new-feature/pull/1
+python ~/skills/greptile/greptile_simple.py review-post https://github.com/bigph00t/new-feature/pull/1
 ```
 
 ## Features
@@ -58,13 +58,13 @@ For more control, use the individual scripts:
 
 ```bash
 # Just enable indexing
-python ~/greptile-skill/greptile_api.py enable owner/repo
+python ~/skills/greptile/greptile_api.py enable owner/repo
 
 # Manual review with options
-python ~/greptile-skill/greptile_review.py <pr-url> --post --repo bigph00t/strainwise
+python ~/skills/greptile/greptile_review.py <pr-url> --post --repo bigph00t/strainwise
 
 # Query a repo
-python ~/greptile-skill/greptile_api.py query owner/repo "How does auth work?"
+python ~/skills/greptile/greptile_api.py query owner/repo "How does auth work?"
 ```
 
 ## Configuration

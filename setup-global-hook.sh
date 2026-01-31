@@ -8,7 +8,7 @@ HOOKS_DIR="$HOME/.git-hooks"
 mkdir -p "$HOOKS_DIR"
 
 # Copy the fast pre-commit script
-cp ~/greptile-skill/greptile-pre-commit-fast.py "$HOOKS_DIR/pre-commit"
+cp ~/skills/greptile/greptile-pre-commit-fast.py "$HOOKS_DIR/pre-commit"
 chmod +x "$HOOKS_DIR/pre-commit"
 
 # Configure git to use global hooks

@@ -7,8 +7,9 @@ import subprocess
 import sys
 import os
 
-# Add greptile-skill to path
-sys.path.insert(0, os.path.expanduser('~/greptile-skill'))
+# Ensure we can import the local greptile modules no matter where this hook is installed.
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, SCRIPT_DIR)
 
 from greptile_api import GreptileAPI
 
@@ -18,6 +19,28 @@ GREEN = '\033[0;32m'
 YELLOW = '\033[1;33m'
 BLUE = '\033[0;34m'
 NC = '\033[0m'  # No Color
+
+NONINTERACTIVE = not (sys.stdin.isatty() and sys.stdout.isatty())
+
+def ask(prompt: str, default_no: bool = True) -> bool:
+    """Return True to proceed.
+
+    In non-interactive contexts (e.g., GUI git clients, CI, bots), we avoid blocking on input.
+    Set GREPTILE_PRECOMMIT_STRICT=1 to fail closed in non-interactive mode.
+    """
+    if NONINTERACTIVE:
+        strict = os.environ.get("GREPTILE_PRECOMMIT_STRICT", "").strip() == "1"
+        if strict:
+            return False
+        # Fail open by default in non-interactive mode to avoid hanging commits.
+        print(f"{YELLOW}⚠️  Non-interactive mode: allowing commit without prompt. (Set GREPTILE_PRECOMMIT_STRICT=1 to block){NC}")
+        return True
+
+    resp = input(prompt).strip().lower()
+    if resp == "":
+        return not default_no
+    return resp in {"y", "yes"}
+
 
 def get_staged_diff():
     """Get the diff of staged changes"""
@@ -100,8 +123,7 @@ Skip style/formatting issues.
         # Check for issues
         if "ISSUES: YES" in review or "CRITICAL" in review.upper():
             print(f"\n{RED}❌ Issues found!{NC}")
-            response = input(f"{YELLOW}Commit anyway? (y/N): {NC}")
-            if response.lower() != 'y':
+            if not ask(f"{YELLOW}Commit anyway? (y/N): {NC}", default_no=True):
                 print(f"{RED}Commit aborted.{NC}")
                 return 1
         else:
@@ -111,8 +133,7 @@ Skip style/formatting issues.
         
     except Exception as e:
         print(f"{RED}❌ Error: {str(e)}{NC}")
-        response = input(f"{YELLOW}Review failed. Commit anyway? (y/N): {NC}")
-        if response.lower() != 'y':
+        if not ask(f"{YELLOW}Review failed. Commit anyway? (y/N): {NC}", default_no=True):
             return 1
         return 0
 

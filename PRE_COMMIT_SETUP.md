@@ -12,14 +12,14 @@ Reviews your code BEFORE you commit, catching:
 
 ```bash
 cd your-repo
-~/greptile-skill/install-pre-commit.sh
+~/skills/greptile/install-pre-commit.sh
 ```
 
 ## Global Install (ALL Repos)
 
 ```bash
 # Install globally - review EVERY commit
-bash ~/greptile-skill/setup-global-hook.sh
+bash ~/skills/greptile/setup-global-hook.sh
 ```
 
 ## How It Works

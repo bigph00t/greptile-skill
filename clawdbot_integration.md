@@ -6,7 +6,7 @@ Add to your HEARTBEAT.md:
 ```markdown
 ## Code Review Check
 Check for pending Greptile reviews every few heartbeats.
-Run: python ~/greptile-skill/greptile.py pending
+Run: python ~/skills/greptile/greptile.py pending
 If any are pending, notify about them.
 ```
 

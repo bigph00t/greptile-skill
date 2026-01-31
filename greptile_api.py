@@ -11,9 +11,16 @@ import subprocess
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Optional
+from urllib.parse import quote
 
 class GreptileAPI:
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None):
+        """Create a Greptile API client.
+
+        Args:
+            api_key: Greptile API key (falls back to GREPTILE_API_KEY or ~/secrets/greptile_api_key)
+            base_url: Override API base URL (falls back to GREPTILE_BASE_URL or https://api.greptile.com)
+        """
         self.api_key = api_key or os.environ.get('GREPTILE_API_KEY')
         if not self.api_key:
             secret_path = Path.home() / 'secrets' / 'greptile_api_key'
@@ -26,8 +33,8 @@ class GreptileAPI:
                 "1. Environment variable: export GREPTILE_API_KEY='your-key'\n"
                 "2. Or create file: echo 'your-key' > ~/secrets/greptile_api_key"
             )
-        
-        self.base_url = "https://api.greptile.com"
+
+        self.base_url = base_url or os.environ.get("GREPTILE_BASE_URL") or "https://api.greptile.com"
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
@@ -73,7 +80,7 @@ class GreptileAPI:
             json=payload
         )
         
-        if response.status_code == 200:
+        if response.status_code in (200, 201):
             data = response.json()
             return {
                 'success': True,
@@ -90,10 +97,18 @@ class GreptileAPI:
                 'status_code': response.status_code
             }
     
-    def check_repo_status(self, repo: str, branch: str = "main", remote: str = "github") -> Dict:
-        """Check indexing status of a repository"""
-        # URL encode the repo identifier
-        repo_id = f"{remote}:{branch}:{repo}".replace('/', '%2F').replace(':', '%3A')
+    def _resolve_branch(self, repo: str, branch: Optional[str]) -> str:
+        return branch or self.get_default_branch(repo)
+
+    def _repo_id(self, remote: str, branch: str, repo: str) -> str:
+        """Encode the repo id used by Greptile's /v2/repositories/{id} endpoint."""
+        # Endpoint expects something like: github:main:owner/repo
+        return quote(f"{remote}:{branch}:{repo}", safe="")
+
+    def check_repo_status(self, repo: str, branch: Optional[str] = None, remote: str = "github") -> Dict:
+        """Check indexing status of a repository."""
+        branch = self._resolve_branch(repo, branch)
+        repo_id = self._repo_id(remote, branch, repo)
         
         response = requests.get(
             f"{self.base_url}/v2/repositories/{repo_id}",
@@ -139,23 +154,24 @@ class GreptileAPI:
         
         return results
     
-    def wait_for_indexing(self, repo: str, timeout_minutes: int = 60) -> Dict:
-        """Wait for repository indexing to complete"""
-        print(f"\n⏳ Waiting for {repo} to be indexed...")
+    def wait_for_indexing(self, repo: str, timeout_minutes: int = 60, branch: Optional[str] = None, remote: str = "github") -> Dict:
+        """Wait for repository indexing to complete."""
+        branch = self._resolve_branch(repo, branch)
+        print(f"\n⏳ Waiting for {repo}@{branch} to be indexed...")
         
         start_time = time.time()
         timeout_seconds = timeout_minutes * 60
         check_interval = 30  # Check every 30 seconds
         
         while True:
-            status = self.check_repo_status(repo)
+            status = self.check_repo_status(repo, branch=branch, remote=remote)
             
             if not status['success']:
                 return status
             
             repo_status = status.get('status', '').upper()
             
-            if repo_status == 'PROCESSED':
+            if repo_status in {'PROCESSED', 'COMPLETED'}:
                 elapsed = time.time() - start_time
                 print(f"\n✅ {repo} indexed successfully in {elapsed/60:.1f} minutes!")
                 return {
@@ -194,8 +210,9 @@ class GreptileAPI:
             
             time.sleep(check_interval)
     
-    def query_repository(self, repo: str, query: str, branch: str = "main", remote: str = "github") -> Dict:
-        """Query a repository for code understanding"""
+    def query_repository(self, repo: str, query: str, branch: Optional[str] = None, remote: str = "github") -> Dict:
+        """Query a repository for code understanding."""
+        branch = self._resolve_branch(repo, branch)
         payload = {
             "messages": [
                 {

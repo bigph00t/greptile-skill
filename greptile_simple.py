@@ -49,8 +49,16 @@ Examples:
             else:
                 print(f"❌ {wait_result.get('error', 'Indexing failed')}")
         else:
-            if "already being processed" in result.get('error', ''):
+            err = result.get('error', '') or ''
+            # Greptile returns a 4xx when already indexing; still allow waiting.
+            if "already" in err.lower() and "process" in err.lower():
                 print("⏳ Already indexing...")
+                print("⏳ Waiting for indexing...")
+                wait_result = api.wait_for_indexing(repo, timeout_minutes=30)
+                if wait_result.get('success'):
+                    print(f"✅ {repo} is ready for code analysis!")
+                else:
+                    print(f"❌ {wait_result.get('error', 'Indexing failed')}")
             else:
                 print(f"❌ {result.get('error', 'Failed')}")
     

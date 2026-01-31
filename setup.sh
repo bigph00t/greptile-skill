@@ -27,7 +27,7 @@ echo "
 ## Code Review Check
 Check for pending Greptile reviews:
 \`\`\`
-python ~/greptile-skill/greptile.py status
+python ~/skills/greptile/greptile.py status
 \`\`\`
 " >> ~/HEARTBEAT.md
 
