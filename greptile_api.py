@@ -29,18 +29,34 @@ class GreptileAPI:
             "Content-Type": "application/json"
         }
     
-    def enable_repo(self, repo: str, branch: str = "main", remote: str = "github") -> Dict:
+    def get_default_branch(self, repo: str) -> str:
+        """Get the default branch for a repo using GitHub CLI"""
+        try:
+            result = subprocess.run(
+                ["gh", "api", f"repos/{repo}", "--jq", ".default_branch"],
+                capture_output=True, text=True
+            )
+            if result.returncode == 0:
+                return result.stdout.strip()
+        except:
+            pass
+        return "main"  # fallback
+    
+    def enable_repo(self, repo: str, branch: str = None, remote: str = "github") -> Dict:
         """
         Enable a repository for Greptile indexing
         
         Args:
             repo: Repository in format "owner/name"
-            branch: Branch to index (default: main)
+            branch: Branch to index (auto-detects if not provided)
             remote: Remote type (github or gitlab)
         
         Returns:
             API response with indexing status
         """
+        # Auto-detect branch if not provided
+        if branch is None:
+            branch = self.get_default_branch(repo)
         payload = {
             "remote": remote,
             "repository": repo,
