@@ -52,14 +52,33 @@ class GreptileWorkflow:
             return False
     
     def wait_for_review(self, pr_url: str, save_notes: bool = True) -> dict:
-        """Wait for Greptile review on a PR"""
-        print(f"\n🔍 Waiting for review on: {pr_url}")
+        """Trigger and get Greptile review on a PR"""
+        print(f"\n🔍 Triggering review on: {pr_url}")
         
-        # Extract owner/repo and PR number from URL
-        parts = pr_url.strip('/').split('/')
-        if len(parts) < 4 or parts[-2] != 'pull':
-            print("❌ Invalid PR URL format. Expected: https://github.com/owner/repo/pull/123")
-            return {"success": False, "error": "Invalid PR URL"}
+        # Use manual review via query API
+        from greptile_review import GreptileReviewer
+        reviewer = GreptileReviewer()
+        
+        result = reviewer.review_pr_via_query(pr_url)
+        if result['success']:
+            print(f"\n✅ Review completed!")
+            
+            # Save notes if requested
+            if save_notes:
+                self._save_review_notes(
+                    result['pr_info']['repo'], 
+                    result['pr_info']['pr_number'], 
+                    result['review']
+                )
+            
+            return {
+                "success": True,
+                "review": result['review'],
+                "pr": pr_url
+            }
+        else:
+            print(f"\n❌ Review failed: {result.get('error', 'Unknown error')}")
+            return {"success": False, "error": result.get('error', 'Failed to get review')}
         
         owner = parts[-4]
         repo_name = parts[-3]

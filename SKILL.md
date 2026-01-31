@@ -1,6 +1,6 @@
 # Greptile Code Review Skill
 
-Get automated code reviews on your GitHub PRs using Greptile AI.
+Get AI-powered code reviews on your GitHub PRs using Greptile's query API.
 
 ## Quick Start
 
