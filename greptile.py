@@ -58,7 +58,7 @@ class GreptileWorkflow:
         # Extract owner/repo and PR number from URL
         parts = pr_url.strip('/').split('/')
         if len(parts) < 4 or parts[-2] != 'pull':
-            print("❌ Invalid PR URL format")
+            print("❌ Invalid PR URL format. Expected: https://github.com/owner/repo/pull/123")
             return {"success": False, "error": "Invalid PR URL"}
         
         owner = parts[-4]

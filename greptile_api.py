@@ -21,7 +21,11 @@ class GreptileAPI:
                 self.api_key = secret_path.read_text().strip()
         
         if not self.api_key:
-            raise ValueError("Greptile API key not found")
+            raise ValueError(
+                "Greptile API key not found. Please set:\n"
+                "1. Environment variable: export GREPTILE_API_KEY='your-key'\n"
+                "2. Or create file: echo 'your-key' > ~/secrets/greptile_api_key"
+            )
         
         self.base_url = "https://api.greptile.com"
         self.headers = {
