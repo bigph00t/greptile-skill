@@ -1,47 +1,74 @@
+---
+name: greptile
+description: Get AI-powered code reviews on GitHub PRs using Greptile. Use this skill when the user wants to review a PR, enable a repo for code analysis, query code understanding, or review code snippets for security issues.
+version: 1.0.0
+---
+
 # Greptile Code Review Skill
 
 Get AI-powered code reviews on your GitHub PRs using Greptile's query API.
 
-## 🚀 Quick Start for AI Agents
+## How to Use This Skill
 
-### Simple Commands
-```bash
-# Enable a repo for analysis
-python ~/skills/greptile/greptile_simple.py enable owner/repo
+The skill is installed at `~/.claude/skills/greptile/`. Use these commands:
 
-# Get PR review  
-python ~/skills/greptile/greptile_simple.py review https://github.com/owner/repo/pull/123
+### Review a PR
 
-# Get review AND post to PR
-python ~/skills/greptile/greptile_simple.py review-post https://github.com/owner/repo/pull/123
-```
-
-## How It Works
-
-Since Greptile doesn't provide a direct PR review API endpoint, we:
-1. Fetch PR diffs using GitHub CLI
-2. Send to Greptile's query API for analysis
-3. Get comprehensive code reviews
-4. Optionally post as PR comments
-
-## Complete Workflow Example
+To review a pull request, run:
 
 ```bash
-# 1. Create repo and enable Greptile
-gh repo create bigph00t/new-feature --private
-python ~/skills/greptile/greptile_simple.py enable bigph00t/new-feature
-
-# 2. Make changes and create PR
-cd ~/new-feature
-git checkout -b add-auth
-# ... make changes ...
-git add -A && git commit -m "Add authentication"
-git push -u origin add-auth
-gh pr create --title "Add authentication" --body "Implements JWT auth"
-
-# 3. Get AI review
-python ~/skills/greptile/greptile_simple.py review-post https://github.com/bigph00t/new-feature/pull/1
+python ~/.claude/skills/greptile/greptile_simple.py review <PR_URL>
 ```
+
+Example:
+```bash
+python ~/.claude/skills/greptile/greptile_simple.py review https://github.com/owner/repo/pull/123
+```
+
+### Review and Post Comment
+
+To review AND post the review as a PR comment:
+
+```bash
+python ~/.claude/skills/greptile/greptile_simple.py review-post <PR_URL>
+```
+
+### Enable a Repo for Analysis
+
+Before reviewing, repos need to be indexed (takes 5-30 min):
+
+```bash
+python ~/.claude/skills/greptile/greptile_simple.py enable owner/repo
+```
+
+### Query a Repo
+
+Ask questions about any indexed codebase:
+
+```bash
+python ~/.claude/skills/greptile/greptile_api.py query owner/repo "How does authentication work?"
+```
+
+### Review Code Directly (No PR)
+
+To review a code snippet for security issues without creating a PR:
+
+```python
+import sys
+sys.path.insert(0, '/home/bigphoot/.claude/skills/greptile')
+from greptile_api import GreptileAPI
+
+api = GreptileAPI()
+code = """your code here"""
+result = api.query_repository('owner/repo', f'Review this code for security issues:\n{code}')
+print(result['response'])
+```
+
+## Configuration
+
+API key must be set in one of:
+- Environment: `export GREPTILE_API_KEY="your-key"`
+- File: `~/secrets/greptile_api_key`
 
 ## Features
 
@@ -52,37 +79,7 @@ python ~/skills/greptile/greptile_simple.py review-post https://github.com/bigph
 - ✅ Handles private repos
 - ✅ Posts reviews as PR comments
 
-## Advanced Usage
-
-For more control, use the individual scripts:
-
-```bash
-# Just enable indexing
-python ~/skills/greptile/greptile_api.py enable owner/repo
-
-# Manual review with options
-python ~/skills/greptile/greptile_review.py <pr-url> --post --repo bigph00t/strainwise
-
-# Query a repo
-python ~/skills/greptile/greptile_api.py query owner/repo "How does auth work?"
-```
-
-## Configuration
-
-Store API key in one of:
-- Environment: `export GREPTILE_API_KEY="your-key"`
-- File: `echo "your-key" > ~/secrets/greptile_api_key`
-
 ## Limitations
 
 - Repos must be indexed first (5-30 min)
 - Empty repos cannot be indexed
-- Reviews use query API, not official review endpoint
-
-## Files
-
-- `greptile_simple.py` - Main commands for AI agents
-- `greptile_api.py` - Core API wrapper
-- `greptile_review.py` - Advanced review features
-- `greptile.py` - Original workflow (deprecated)
-- `AI_AGENT_GUIDE.md` - Detailed explanation
