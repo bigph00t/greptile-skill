@@ -80,7 +80,15 @@ def process_payment(card_token: str, amount_cents: int, user_id: str) -> Optiona
 '''
 
 # Initialize Greptile
-api = GreptileAPI()
+try:
+    api = GreptileAPI()
+    # Validate API key is present
+    if not api.api_key:
+        print("❌ Please set GREPTILE_API_KEY environment variable or create ~/secrets/greptile_api_key")
+        sys.exit(1)
+except Exception as e:
+    print(f"❌ Failed to initialize API: {e}")
+    sys.exit(1)
 
 print("🤖 AI Agent Workflow Demo\n")
 print("Step 1: Generate initial code")

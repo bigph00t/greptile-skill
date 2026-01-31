@@ -8,7 +8,15 @@ sys.path.append('..')
 from greptile_api import GreptileAPI
 
 # Initialize API
-api = GreptileAPI()
+try:
+    api = GreptileAPI()
+    # Validate API key is present
+    if not api.api_key:
+        print("❌ Please set GREPTILE_API_KEY environment variable or create ~/secrets/greptile_api_key")
+        sys.exit(1)
+except Exception as e:
+    print(f"❌ Failed to initialize API: {e}")
+    sys.exit(1)
 
 # Code to review
 suspicious_code = """
